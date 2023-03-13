@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class UserController extends Controller
 {
@@ -28,7 +29,7 @@ class UserController extends Controller
             $validate = \Validator::make($params_array, [
                 'name' => 'required|alpha',
                 'surname' => 'required|alpha',
-                'email' => 'required|email|unique:users', // Comprobar si el usuario existe (duplicado)
+                'email' => 'required|email|unique:users', // 2.1 Comprobar si el usuario existe (duplicado)
                 'password' => 'required'
             ]);
 
@@ -41,11 +42,38 @@ class UserController extends Controller
                 );
 
             }else{
-                $res =array(
-                    'status' => 'success',
-                    'code' => 200,
-                    'message' => 'Usuario registrado correctamente'
-                );
+                // 3. Cifrar la contraseña
+                $pwd = password_hash($params->password, PASSWORD_BCRYPT, ['cost'=>4]);
+
+                // 4. Creamos el usuario usando el modelo User
+                $user = new User();
+                $user->name = $params_array['name'];
+                $user->surname = $params_array['surname'];
+                $user->email = $params_array['email'];
+                $user->password = $pwd;
+                // $user->description = $params_array['description'];
+                // $user->role = 'ROLE_USER';
+                $user->save();
+                // // 5. guardar el usuario en la base de datos
+                if ($user->save()) {
+                    
+                    // El usuario se ha guardado correctamente                  
+                    $res =array(
+                        'status' => 'success',
+                        'code' => 200,
+                        'message' => 'Usuario registrado correctamente'
+                    );
+                } else {
+                    // Ha ocurrido un error al guardar el usuario
+                    $res =array(
+                        'status' => 'error',
+                        'code' => 500,
+                        'message' => 'Debido a un error interno los datos no se han podido guardar, 
+                            intentalo más tarde'
+                    );
+                }
+                
+
             }
 
         }else{
@@ -57,22 +85,6 @@ class UserController extends Controller
         }
 
         return response()->json($res, $res['code']);
-
-
-        // 3. Cifrar la contraseña
-        // 4. Comprobar si el usuario existe (duplicado)
-        // 5. Si no existe, guardar el usuario en la base de datos
-
-        // $data =array(
-        //     'status' => 'success',
-        //     'code' => 200,
-        //     'message' => 'Usuario registrado correctamente'
-        // );
-        
-
-        // return response()->json($data, $data['code']);
-
-        // return "Hola mundo desde el controlador de usuarios - método REGISTRO ".$name;
     }
 
     public function login(Request $request){
