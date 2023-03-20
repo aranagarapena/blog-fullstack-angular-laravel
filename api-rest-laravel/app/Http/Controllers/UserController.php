@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Helpers\AuthJWT;
 
 class UserController extends Controller
 {
@@ -43,7 +44,7 @@ class UserController extends Controller
 
             }else{
                 // 3. Cifrar la contraseña
-                $pwd = password_hash($params->password, PASSWORD_BCRYPT, ['cost'=>4]);
+                $pwd = hash('sha256', $params->password);
 
                 // 4. Creamos el usuario usando el modelo User
                 $user = new User();
@@ -51,9 +52,9 @@ class UserController extends Controller
                 $user->surname = $params_array['surname'];
                 $user->email = $params_array['email'];
                 $user->password = $pwd;
+                $user->role = 'ROLE_USER';
                 // $user->description = $params_array['description'];
-                // $user->role = 'ROLE_USER';
-                $user->save();
+
                 // // 5. guardar el usuario en la base de datos
                 if ($user->save()) {
                     
@@ -88,7 +89,74 @@ class UserController extends Controller
     }
 
     public function login(Request $request){
-        return "Hola mundo desde el controlador de usuarios - método LOGIN";
+        $jwtAuth = new \JWTAuth();
+
+        // 1. Recibir los datos por POST
+        $json = $request->input('json', null);
+        $params = json_decode($json);
+        $params_array = json_decode($json,true);
+
+        // 2. Validar los datos
+        $validate = \Validator::make($params_array, [
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        if($validate->fails()){
+            $res =array(
+                'status' => 'error',
+                'code' => 404,
+                'message' => 'El usuario no se ha podido identificar',
+                'errors' => $validate->errors()
+            );
+        }else{
+            // 3. Cifrar la contraseña
+            $pwd = hash('sha256', $params->password);
+
+            // 4. Devolver el token o datos
+            if(empty($params->getToken) || filter_var($params->getToken, FILTER_VALIDATE_BOOLEAN)==false){ 
+                return $jwtAuth->signup($params->email, $pwd);
+
+            }else{
+                return $jwtAuth->signup($params->email, $pwd, true); // si recibimos el parametro 'getToken = true' en la petición
+
+            }
+        }
+
+
+    }
+
+    public function update(Request $request){
+        $token = $request->header('Authorization');
+        $jwtAuth = new \JWTAuth();
+        $checkToken = $jwtAuth->checkToken($token);
+
+        // if(checkTokenFormat($token)){
+            if($checkToken){
+                return json_encode(array(
+                    'status' => 'success',
+                    'code' => 200,
+                    'message' => 'Login Correcto',
+                    'token' => $token
+                    
+                ));
+            }else{
+                return json_encode(array(
+                    'status' => 'error',
+                    'code' => 404,
+                    'message' => 'Login Incorrecto',
+                    'token' => $token
+                    
+                ));
+            }
+        // }else{
+        //     return json_encode(array(
+        //         'status' => 'error',
+        //         'code' => 404,
+        //         'message' => 'El token no tiene el formato correcto',
+        //         'token' => $token           
+        //     ));
+        // }
     }
 
 }

@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
     */
     Route::post('/user/register', 'App\Http\Controllers\UserController@register');
     Route::post('/user/login', 'App\Http\Controllers\UserController@login');
+    Route::post('/user/update', 'App\Http\Controllers\UserController@update');
 
 
     // Rutas de prueba
