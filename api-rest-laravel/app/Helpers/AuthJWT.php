@@ -5,7 +5,8 @@ use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 
-class AuthJWT{
+class AuthJWT
+{
 
     const KEY = 'clave_secreta';
 
@@ -41,7 +42,7 @@ class AuthJWT{
                 'name' => $user->name,
                 'surname' => $user->surname,
                 'iat' => time(), // cuando se creo el token
-                'exp' => time() + (7 * 24 * 60 * 60) // cuando caducara el token
+                'exp' => time() + (365 * 24 * 60 * 60) // cuando caducara el token
             );
             
             $jwtToken = JWT::encode($token,self::KEY,'HS256');
@@ -93,6 +94,7 @@ class AuthJWT{
         if($getIdentity){
             return $jwt;
         }
+        if(true){}
 
         return $auth;
     }
