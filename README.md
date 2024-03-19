@@ -1,4 +1,4 @@
-# PROYECTO: "Proyecto de ejemplo de desarrollo FullStack. Programado utilizando Laravel y Angular"
+# PROYECTO: "Ejemplo de desarrollo FullStack pogramado utilizando Laravel y Angular"
 **_Ambito_**: Proyecto de un blog, en el que el usuario puede registrarse, loguearse, crear posts, categorías, etc. y ver los posts de otros usuarios.
 
 **_Alcance_**: En primera instancia, el usuario podrá registrarse, loguarse y acceder al blog. Además podrán ver los posts de otros usuarios. En un futuro, se podrán crear posts, categorías, etc.
